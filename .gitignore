@@ -1,3 +1,6 @@
+# Project notes (not part of codebase)
+idea/
+
 # Environment
 .env
 *.env.local
