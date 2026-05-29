@@ -35,12 +35,6 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
 
-    dealstatus = sa.Enum(
-        "CREATED", "LOCKED", "PAID", "DONE", "EXPIRED", "CANCELLED",
-        name="dealstatus",
-    )
-    dealstatus.create(op.get_bind())
-
     op.create_table(
         "deals",
         sa.Column("id", sa.Integer(), primary_key=True),
@@ -74,9 +68,6 @@ def upgrade() -> None:
         "WHERE verify_status = 'VERIFIED'"
     )
 
-    transactiontype = sa.Enum("CREDIT", "DEBIT", "WITHDRAW", name="transactiontype")
-    transactiontype.create(op.get_bind())
-
     op.create_table(
         "wallet_transactions",
         sa.Column("id", sa.Integer(), primary_key=True),
@@ -87,9 +78,6 @@ def upgrade() -> None:
         sa.Column("balance_after", sa.Numeric(12, 2), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
-
-    withdrawalstatus = sa.Enum("QUEUED", "PAID_OUT", name="withdrawalstatus")
-    withdrawalstatus.create(op.get_bind())
 
     op.create_table(
         "withdrawals",
