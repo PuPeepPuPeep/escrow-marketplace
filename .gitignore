@@ -23,6 +23,7 @@ frontend/.vite/
 
 # Docker
 *.log
+docker-compose.override.yml
 
 # IDE
 .vscode/
