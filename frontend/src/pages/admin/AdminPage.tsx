@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminExportWithdrawals, adminGetStats, adminGetWithdrawals, adminMarkPayout } from "../../api/admin";
-import { DealStatusBadge } from "../../components/DealStatusBadge";
 
 interface Stats {
   total_deals: number;
