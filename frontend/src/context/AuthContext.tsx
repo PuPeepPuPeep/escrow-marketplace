@@ -31,9 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!token) {
+      setUser(null);
       setLoading(false);
       return;
     }
+    setLoading(true);  // reset before every fetch so guards wait correctly
     getMe()
       .then((res) => setUser(res.data))
       .catch(() => logout())
