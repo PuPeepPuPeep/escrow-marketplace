@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.dependencies import get_db, require_role
+from app.dependencies import get_db, require_user
 from app.models.user import User
 from app.schemas.wallet import WalletResponse, WithdrawRequest, WithdrawalResponse
 from app.services import wallet_service
@@ -12,7 +12,7 @@ router = APIRouter()
 @router.get("", response_model=WalletResponse)
 def get_wallet(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("seller", "admin")),
+    current_user: User = Depends(require_user),
 ):
     try:
         wallet = wallet_service.get_wallet(db, current_user.id)
@@ -25,7 +25,7 @@ def get_wallet(
 def withdraw(
     body: WithdrawRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("seller", "admin")),
+    current_user: User = Depends(require_user),
 ):
     try:
         withdrawal = wallet_service.request_withdrawal(
