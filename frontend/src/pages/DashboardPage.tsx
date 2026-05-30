@@ -1,85 +1,156 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createDeal } from "../api/deals";
-import { useAuth } from "../context/AuthContext";
+import { createDeal, cancelDeal, getMyDeals } from "../api/deals";
+import Header from "../components/Header";
+import { DealStatusBadge } from "../components/DealStatusBadge";
+import type { Deal } from "../types";
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [duration, setDuration] = useState(30);
   const [dealLink, setDealLink] = useState("");
-  const [error, setError] = useState("");
-  const [token, setToken] = useState("");
+  const [createError, setCreateError] = useState("");
+  const [myDeals, setMyDeals] = useState<Deal[]>([]);
+  const [dealsError, setDealsError] = useState("");
+
+  const loadMyDeals = () => {
+    getMyDeals()
+      .then((r) => setMyDeals(r.data))
+      .catch(() => setDealsError("Failed to load your deals"));
+  };
+
+  useEffect(() => { loadMyDeals(); }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setCreateError("");
     try {
       const res = await createDeal(title, amount, duration);
       const t = res.data.unique_token;
-      setToken(t);
       setDealLink(`${window.location.origin}/deal/${t}`);
+      setTitle("");
+      setAmount("");
+      loadMyDeals();
     } catch {
-      setError("Failed to create deal");
+      setCreateError("Failed to create deal");
+    }
+  };
+
+  const handleCancel = async (id: number) => {
+    try {
+      await cancelDeal(id);
+      loadMyDeals();
+    } catch {
+      alert("Failed to cancel deal");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b px-6 py-3 flex justify-between items-center">
-        <span className="font-bold text-lg">Escrow Marketplace</span>
-        <div className="flex gap-4 items-center">
-          <span className="text-sm text-gray-500">{user?.email} ({user?.role})</span>
-          {user?.role === "seller" && (
-            <button onClick={() => navigate("/wallet")} className="text-sm text-blue-600 hover:underline">Wallet</button>
-          )}
-          {user?.role === "admin" && (
-            <button onClick={() => navigate("/admin")} className="text-sm text-purple-600 hover:underline">Admin</button>
-          )}
-          <button onClick={logout} className="text-sm text-red-500 hover:underline">Logout</button>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-slate-50">
+      <Header />
 
-      <main className="max-w-xl mx-auto mt-10 px-4">
-        {user?.role === "seller" || user?.role === "admin" ? (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Create New Deal</h2>
-            {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
-            <form onSubmit={handleCreate} className="space-y-3">
+      <main className="max-w-2xl mx-auto mt-8 px-4 space-y-6 pb-12">
+        {/* Create Deal */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">Create New Deal</h2>
+          {createError && (
+            <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3">
+              {createError}
+            </p>
+          )}
+          <form onSubmit={handleCreate} className="space-y-3">
+            <input
+              placeholder="Deal title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              required
+            />
+            <input
+              placeholder="Amount (THB)"
+              type="number"
+              min="1"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              required
+            />
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-slate-600 whitespace-nowrap">Lock duration (min):</label>
               <input
-                placeholder="Deal title" value={title} onChange={(e) => setTitle(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm" required
+                type="number"
+                min="5"
+                max="60"
+                value={duration}
+                onChange={(e) => setDuration(Number(e.target.value))}
+                className="w-24 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
-              <input
-                placeholder="Amount (THB)" type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm" required
-              />
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-600 whitespace-nowrap">Lock duration (min):</label>
-                <input
-                  type="number" min="5" max="60" value={duration} onChange={(e) => setDuration(Number(e.target.value))}
-                  className="w-24 border rounded px-3 py-2 text-sm"
-                />
-              </div>
-              <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-semibold">
-                Create Deal
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-semibold transition-colors"
+            >
+              Create Deal
+            </button>
+          </form>
+
+          {dealLink && (
+            <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+              <p className="text-sm font-semibold text-green-800 mb-1">
+                Deal created! Share this link with the buyer:
+              </p>
+              <button
+                onClick={() => navigate(`/deal/${dealLink.split("/deal/")[1]}`)}
+                className="text-indigo-600 text-sm break-all hover:underline text-left"
+              >
+                {dealLink}
               </button>
-            </form>
+            </div>
+          )}
+        </div>
 
-            {dealLink && (
-              <div className="mt-4 p-3 bg-green-50 rounded border border-green-200">
-                <p className="text-sm font-semibold text-green-800 mb-1">Deal created! Share this link with the buyer:</p>
-                <a href={`/deal/${token}`} className="text-blue-600 text-sm break-all hover:underline">{dealLink}</a>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow p-6 text-center">
-            <p className="text-gray-600">Enter a deal link shared by the seller to get started.</p>
-          </div>
-        )}
+        {/* My Deals */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">My Deals</h2>
+          {dealsError && <p className="text-red-600 text-sm">{dealsError}</p>}
+          {myDeals.length === 0 ? (
+            <p className="text-slate-400 text-sm">No deals yet. Create one above.</p>
+          ) : (
+            <div className="space-y-3">
+              {myDeals.map((deal) => (
+                <div
+                  key={deal.id}
+                  className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <button
+                      onClick={() => navigate(`/deal/${deal.unique_token}`)}
+                      className="font-medium text-slate-800 hover:text-indigo-600 text-sm truncate block"
+                    >
+                      {deal.title}
+                    </button>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      ฿{deal.amount} · {new Date(deal.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 ml-3 flex-shrink-0">
+                    <DealStatusBadge status={deal.status} />
+                    {deal.status === "CREATED" && (
+                      <button
+                        onClick={() => handleCancel(deal.id)}
+                        className="text-xs text-red-500 hover:text-red-700 border border-red-200 rounded px-2 py-1 hover:bg-red-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

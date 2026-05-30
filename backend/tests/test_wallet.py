@@ -14,8 +14,8 @@ def _complete_deal(client, seller_token, buyer_token, amount="1000"):
 
 
 def test_wallet_credited_after_done(client):
-    seller = make_user(client, "wseller@test.com", role="seller")
-    buyer = make_user(client, "wbuyer@test.com", role="buyer")
+    seller = make_user(client, "wseller@test.com")
+    buyer = make_user(client, "wbuyer@test.com")
 
     _complete_deal(client, seller, buyer, "1000")
 
@@ -29,8 +29,8 @@ def test_wallet_credited_after_done(client):
 
 def test_wallet_reconciliation(client):
     """wallet.balance must equal sum of CREDIT transactions."""
-    seller = make_user(client, "wseller2@test.com", role="seller")
-    buyer = make_user(client, "wbuyer2@test.com", role="buyer")
+    seller = make_user(client, "wseller2@test.com")
+    buyer = make_user(client, "wbuyer2@test.com")
 
     _complete_deal(client, seller, buyer, "500")
     _complete_deal(client, seller, buyer, "300")
@@ -43,8 +43,8 @@ def test_wallet_reconciliation(client):
 
 
 def test_withdrawal_reduces_balance(client):
-    seller = make_user(client, "wseller3@test.com", role="seller")
-    buyer = make_user(client, "wbuyer3@test.com", role="buyer")
+    seller = make_user(client, "wseller3@test.com")
+    buyer = make_user(client, "wbuyer3@test.com")
 
     _complete_deal(client, seller, buyer, "1000")
 
@@ -64,7 +64,7 @@ def test_withdrawal_reduces_balance(client):
 
 
 def test_withdrawal_insufficient_balance(client):
-    seller = make_user(client, "wseller4@test.com", role="seller")
+    seller = make_user(client, "wseller4@test.com")
 
     res = client.post(
         "/wallet/withdraw",

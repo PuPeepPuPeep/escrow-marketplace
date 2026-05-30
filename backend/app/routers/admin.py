@@ -5,7 +5,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.dependencies import get_db, require_role
+from app.dependencies import get_db, require_admin
 from app.models.deal import Deal, DealStatus
 from app.models.user import User
 from app.models.withdrawal import Withdrawal, WithdrawalStatus
@@ -20,7 +20,7 @@ def list_deals(
     skip: int = 0,
     limit: int = 50,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_admin),
 ):
     deals = db.execute(
         select(Deal).order_by(Deal.created_at.desc()).offset(skip).limit(limit)
@@ -31,7 +31,7 @@ def list_deals(
 @router.get("/stats", response_model=StatsResponse)
 def get_stats(
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_admin),
 ):
     total_deals = db.execute(select(func.count(Deal.id))).scalar() or 0
 
@@ -60,7 +60,7 @@ def get_stats(
 def list_withdrawals(
     status: str | None = None,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_admin),
 ):
     q = select(Withdrawal).order_by(Withdrawal.requested_at.desc())
     if status:
@@ -72,7 +72,7 @@ def list_withdrawals(
 @router.get("/withdrawals/export")
 def export_withdrawals(
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_admin),
 ):
     return StreamingResponse(
         generate_withdrawal_csv(db),
@@ -85,7 +85,7 @@ def export_withdrawals(
 def mark_payout(
     withdrawal_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_admin),
 ):
     from datetime import datetime, timezone
 

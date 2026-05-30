@@ -1,10 +1,10 @@
-from tests.conftest import auth_header, make_user
+from tests.conftest import auth_header, make_admin, make_user
 
 
 def test_register_and_login(client):
-    res = client.post("/auth/register", json={"email": "u@test.com", "password": "pass", "role": "buyer"})
+    res = client.post("/auth/register", json={"email": "u@test.com", "password": "pass"})
     assert res.status_code == 201
-    assert res.json()["role"] == "buyer"
+    assert res.json()["is_admin"] is False
 
     res = client.post("/auth/login", json={"email": "u@test.com", "password": "pass"})
     assert res.status_code == 200
@@ -16,8 +16,8 @@ def test_register_and_login(client):
 
 
 def test_duplicate_email(client):
-    client.post("/auth/register", json={"email": "dup@test.com", "password": "pass", "role": "buyer"})
-    res = client.post("/auth/register", json={"email": "dup@test.com", "password": "pass", "role": "buyer"})
+    client.post("/auth/register", json={"email": "dup@test.com", "password": "pass"})
+    res = client.post("/auth/register", json={"email": "dup@test.com", "password": "pass"})
     assert res.status_code == 400
 
 
@@ -26,7 +26,21 @@ def test_invalid_login(client):
     assert res.status_code == 401
 
 
-def test_role_guard(client):
-    buyer_token = make_user(client, "buyer@test.com", role="buyer")
-    res = client.post("/deals", json={"title": "test", "amount": "100"}, headers=auth_header(buyer_token))
+def test_register_always_creates_non_admin(client):
+    """Registration always creates a regular user; admin must be set via DB."""
+    res = client.post("/auth/register", json={"email": "notadmin@test.com", "password": "pass"})
+    assert res.status_code == 201
+    assert res.json()["is_admin"] is False
+
+
+def test_admin_guard(client, db):
+    user_token = make_user(client, "user@test.com")
+    admin_token = make_admin(client, db, "admin@test.com")
+
+    # Admin-only endpoint rejects regular user
+    res = client.get("/admin/stats", headers=auth_header(user_token))
     assert res.status_code == 403
+
+    # Admin can access it
+    res = client.get("/admin/stats", headers=auth_header(admin_token))
+    assert res.status_code == 200

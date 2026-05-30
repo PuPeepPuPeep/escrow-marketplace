@@ -4,7 +4,6 @@ from pydantic import BaseModel, EmailStr
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
-    role: str = "buyer"
 
 
 class LoginRequest(BaseModel):
@@ -20,6 +19,6 @@ class TokenResponse(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: str
-    role: str
+    is_admin: bool
 
     model_config = {"from_attributes": True}

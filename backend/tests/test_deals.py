@@ -1,11 +1,11 @@
 import threading
 
-from tests.conftest import auth_header, make_user
+from tests.conftest import auth_header, make_admin, make_user
 
 
 def test_full_deal_happy_path(client):
-    seller = make_user(client, "seller@test.com", role="seller")
-    buyer = make_user(client, "buyer@test.com", role="buyer")
+    seller = make_user(client, "seller@test.com")
+    buyer = make_user(client, "buyer@test.com")
 
     # Create deal
     res = client.post("/deals", json={"title": "Widget", "amount": "500"}, headers=auth_header(seller))
@@ -34,9 +34,9 @@ def test_full_deal_happy_path(client):
 
 def test_accept_twice_race_condition(client):
     """Second concurrent accept must fail — SELECT FOR UPDATE prevents double-lock."""
-    seller = make_user(client, "seller2@test.com", role="seller")
-    buyer1 = make_user(client, "buyer2@test.com", role="buyer")
-    buyer2 = make_user(client, "buyer3@test.com", role="buyer")
+    seller = make_user(client, "seller2@test.com")
+    buyer1 = make_user(client, "buyer2@test.com")
+    buyer2 = make_user(client, "buyer3@test.com")
 
     res = client.post("/deals", json={"title": "Race", "amount": "100"}, headers=auth_header(seller))
     token = res.json()["unique_token"]
@@ -58,8 +58,8 @@ def test_accept_twice_race_condition(client):
 
 def test_pay_idempotency(client):
     """Submitting payment twice should not double-credit."""
-    seller = make_user(client, "seller3@test.com", role="seller")
-    buyer = make_user(client, "buyer4@test.com", role="buyer")
+    seller = make_user(client, "seller3@test.com")
+    buyer = make_user(client, "buyer4@test.com")
 
     res = client.post("/deals", json={"title": "Idempotent", "amount": "200"}, headers=auth_header(seller))
     token = res.json()["unique_token"]
@@ -74,8 +74,8 @@ def test_pay_idempotency(client):
 
 
 def test_pay_failed_slip(client):
-    seller = make_user(client, "seller4@test.com", role="seller")
-    buyer = make_user(client, "buyer5@test.com", role="buyer")
+    seller = make_user(client, "seller4@test.com")
+    buyer = make_user(client, "buyer5@test.com")
 
     res = client.post("/deals", json={"title": "Fail", "amount": "100"}, headers=auth_header(seller))
     token = res.json()["unique_token"]
@@ -88,7 +88,7 @@ def test_pay_failed_slip(client):
 
 
 def test_cancel_created_deal(client):
-    seller = make_user(client, "seller5@test.com", role="seller")
+    seller = make_user(client, "seller5@test.com")
 
     res = client.post("/deals", json={"title": "Cancel", "amount": "100"}, headers=auth_header(seller))
     deal_id = res.json()["id"]
@@ -96,3 +96,24 @@ def test_cancel_created_deal(client):
     res = client.post(f"/deals/{deal_id}/cancel", headers=auth_header(seller))
     assert res.status_code == 200
     assert res.json()["status"] == "CANCELLED"
+
+
+def test_admin_cannot_create_deal(client, db):
+    admin = make_admin(client, db, "admin@test.com")
+
+    res = client.post("/deals", json={"title": "AdminDeal", "amount": "100"}, headers=auth_header(admin))
+    assert res.status_code == 403
+
+
+def test_get_my_deals(client):
+    seller = make_user(client, "mine@test.com")
+    other = make_user(client, "other@test.com")
+
+    client.post("/deals", json={"title": "MyDeal", "amount": "100"}, headers=auth_header(seller))
+    client.post("/deals", json={"title": "OtherDeal", "amount": "200"}, headers=auth_header(other))
+
+    res = client.get("/deals/mine", headers=auth_header(seller))
+    assert res.status_code == 200
+    titles = [d["title"] for d in res.json()]
+    assert "MyDeal" in titles
+    assert "OtherDeal" not in titles

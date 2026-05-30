@@ -56,8 +56,26 @@ def client(db):
     app.dependency_overrides.clear()
 
 
-def make_user(client: TestClient, email: str, password: str = "password123", role: str = "buyer"):
-    client.post("/auth/register", json={"email": email, "password": password, "role": role})
+def make_user(client: TestClient, email: str, password: str = "password123"):
+    client.post("/auth/register", json={"email": email, "password": password})
+    res = client.post("/auth/login", json={"email": email, "password": password})
+    return res.json()["access_token"]
+
+
+def make_admin(client: TestClient, db, email: str, password: str = "password123") -> str:
+    """Create an admin user directly in DB (register endpoint always creates non-admin)."""
+    from decimal import Decimal
+
+    from app.models.user import User
+    from app.models.wallet import Wallet
+    from app.security import hash_password
+
+    user = User(email=email, password_hash=hash_password(password), is_admin=True)
+    db.add(user)
+    db.flush()
+    db.add(Wallet(user_id=user.id, balance=Decimal("0")))
+    db.commit()
+
     res = client.post("/auth/login", json={"email": email, "password": password})
     return res.json()["access_token"]
 

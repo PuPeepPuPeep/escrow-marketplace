@@ -1,4 +1,4 @@
-from typing import Callable, Generator
+from typing import Generator
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -35,10 +35,15 @@ def get_current_user(
     return user
 
 
-def require_role(*roles: str) -> Callable:
-    def dependency(current_user=Depends(get_current_user)):
-        if current_user.role not in roles:
-            raise HTTPException(status.HTTP_403_FORBIDDEN, "insufficient permissions")
-        return current_user
+def require_admin(current_user=Depends(get_current_user)):
+    """Allow only admin users."""
+    if not current_user.is_admin:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "admin only")
+    return current_user
 
-    return dependency
+
+def require_user(current_user=Depends(get_current_user)):
+    """Allow only non-admin users (regular users)."""
+    if current_user.is_admin:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "admin cannot perform user actions")
+    return current_user

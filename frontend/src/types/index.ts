@@ -1,9 +1,7 @@
-export type Role = "buyer" | "seller" | "admin";
-
 export interface User {
   id: number;
   email: string;
-  role: Role;
+  is_admin: boolean;
 }
 
 export type DealStatus =

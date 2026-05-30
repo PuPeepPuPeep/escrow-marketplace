@@ -199,7 +199,7 @@ def confirm_deal(db: Session, deal_id: int, buyer_id: int) -> Deal:
     return deal
 
 
-def cancel_deal(db: Session, deal_id: int, requesting_user_id: int, requesting_role: str) -> Deal:
+def cancel_deal(db: Session, deal_id: int, requesting_user_id: int, requesting_is_admin: bool) -> Deal:
     deal = db.execute(
         select(Deal).where(Deal.id == deal_id).with_for_update()
     ).scalar_one_or_none()
@@ -210,10 +210,10 @@ def cancel_deal(db: Session, deal_id: int, requesting_user_id: int, requesting_r
     if deal.status in (DealStatus.PAID, DealStatus.DONE):
         raise ValueError("cannot cancel a deal that is PAID or DONE")
 
-    if deal.status == DealStatus.LOCKED and requesting_role != "admin":
+    if deal.status == DealStatus.LOCKED and not requesting_is_admin:
         raise ValueError("only admin can cancel a LOCKED deal")
 
-    if deal.status == DealStatus.CREATED and deal.seller_id != requesting_user_id and requesting_role != "admin":
+    if deal.status == DealStatus.CREATED and deal.seller_id != requesting_user_id and not requesting_is_admin:
         raise ValueError("only the seller or admin can cancel this deal")
 
     deal.status = DealStatus.CANCELLED
@@ -221,3 +221,9 @@ def cancel_deal(db: Session, deal_id: int, requesting_user_id: int, requesting_r
     db.commit()
     db.refresh(deal)
     return deal
+
+
+def get_my_deals(db: Session, seller_id: int) -> list[Deal]:
+    return db.execute(
+        select(Deal).where(Deal.seller_id == seller_id).order_by(Deal.created_at.desc())
+    ).scalars().all()

@@ -14,8 +14,6 @@ router = APIRouter()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(body: RegisterRequest, db: Session = Depends(get_db)):
-    if body.role not in ("buyer", "seller", "admin"):
-        raise HTTPException(400, "role must be buyer, seller, or admin")
     existing = db.query(User).filter(User.email == body.email).first()
     if existing:
         raise HTTPException(400, "email already registered")
@@ -23,12 +21,11 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
     user = User(
         email=body.email,
         password_hash=hash_password(body.password),
-        role=body.role,
+        is_admin=False,
     )
     db.add(user)
     db.flush()  # get user.id before commit
 
-    # every user gets a wallet (sellers use it; buyers' balance stays 0)
     wallet = Wallet(user_id=user.id, balance=Decimal("0.00"))
     db.add(wallet)
     db.commit()

@@ -18,3 +18,6 @@ export const confirmDeal = (dealId: number) =>
 
 export const cancelDeal = (dealId: number) =>
   api.post<Deal>(`/deals/${dealId}/cancel`);
+
+export const getMyDeals = () =>
+  api.get<Deal[]>("/deals/mine");
