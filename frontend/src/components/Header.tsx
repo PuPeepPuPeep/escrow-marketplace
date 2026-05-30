@@ -17,23 +17,31 @@ export default function Header() {
       </button>
 
       <div className="flex items-center gap-5 text-sm">
-        <span className="text-slate-400 hidden sm:block">{user?.email}</span>
+        {user ? (
+          <>
+            <span className="text-slate-400 hidden sm:block">{user.email}</span>
 
-        {user && !user.is_admin && (
-          <button
-            onClick={() => navigate("/wallet")}
-            className="text-slate-300 hover:text-white transition-colors"
-          >
-            Wallet
-          </button>
+            {!user.is_admin && (
+              <button
+                onClick={() => navigate("/wallet")}
+                className="text-slate-300 hover:text-white transition-colors"
+              >
+                Wallet
+              </button>
+            )}
+
+            <button
+              onClick={() => { logout(); navigate("/login"); }}
+              className="text-slate-400 hover:text-red-400 transition-colors"
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <a href="/login" className="text-slate-300 hover:text-white transition-colors">
+            Sign In
+          </a>
         )}
-
-        <button
-          onClick={() => { logout(); navigate("/login"); }}
-          className="text-slate-400 hover:text-red-400 transition-colors"
-        >
-          Logout
-        </button>
       </div>
     </header>
   );
