@@ -29,7 +29,7 @@ export default function Header() {
         )}
 
         <button
-          onClick={logout}
+          onClick={() => { logout(); navigate("/login"); }}
           className="text-slate-400 hover:text-red-400 transition-colors"
         >
           Logout
