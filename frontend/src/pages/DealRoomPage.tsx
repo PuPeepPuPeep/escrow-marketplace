@@ -10,7 +10,7 @@ import { useState } from "react";
 export default function DealRoomPage() {
   const { token } = useParams<{ token: string }>();
   const { user } = useAuth();
-  const { deal, error } = useDealPolling(token ?? null);
+  const { deal, error, refetch } = useDealPolling(token ?? null);
   const [actionError, setActionError] = useState("");
   const [slipUrl, setSlipUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,6 +20,7 @@ export default function DealRoomPage() {
     setIsSubmitting(true);
     try {
       await fn();
+      await refetch(); // update deal status immediately — don't wait for next poll
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
       setActionError(msg ?? "Action failed");
