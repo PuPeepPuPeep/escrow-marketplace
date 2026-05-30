@@ -77,6 +77,27 @@ export default function DealRoomPage() {
           )}
 
           <div className="space-y-2">
+            {/* Not logged in: prompt to login */}
+            {deal.status === "CREATED" && !user && (
+              <div className="text-center space-y-2 py-1">
+                <p className="text-sm text-slate-500">Sign in to accept this deal</p>
+                <div className="flex gap-2">
+                  <a
+                    href={`/login`}
+                    className="flex-1 text-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-semibold transition-colors text-sm"
+                  >
+                    Sign In
+                  </a>
+                  <a
+                    href={`/register`}
+                    className="flex-1 text-center border border-indigo-300 text-indigo-600 py-2 rounded-lg hover:bg-indigo-50 font-semibold transition-colors text-sm"
+                  >
+                    Register
+                  </a>
+                </div>
+              </div>
+            )}
+
             {/* Buyer: accept deal */}
             {deal.status === "CREATED" && user && !isSeller && !isAdmin && (
               <button
