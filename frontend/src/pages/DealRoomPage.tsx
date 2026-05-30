@@ -13,14 +13,18 @@ export default function DealRoomPage() {
   const { deal, error } = useDealPolling(token ?? null);
   const [actionError, setActionError] = useState("");
   const [slipUrl, setSlipUrl] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handle = async (fn: () => Promise<unknown>) => {
     setActionError("");
+    setIsSubmitting(true);
     try {
       await fn();
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
       setActionError(msg ?? "Action failed");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -76,9 +80,10 @@ export default function DealRoomPage() {
             {deal.status === "CREATED" && user && !isSeller && !isAdmin && (
               <button
                 onClick={() => handle(() => acceptDeal(deal.unique_token))}
-                className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-semibold transition-colors"
+                disabled={isSubmitting}
+                className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Accept Deal
+                {isSubmitting ? "Processing…" : "Accept Deal"}
               </button>
             )}
 
@@ -89,13 +94,15 @@ export default function DealRoomPage() {
                   placeholder="Slip image URL (optional)"
                   value={slipUrl}
                   onChange={(e) => setSlipUrl(e.target.value)}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  disabled={isSubmitting}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-60"
                 />
                 <button
                   onClick={() => handle(() => payDeal(deal.id, slipUrl || undefined))}
-                  className="w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700 font-semibold transition-colors"
+                  disabled={isSubmitting}
+                  className="w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Submit Payment
+                  {isSubmitting ? "Processing…" : "Submit Payment"}
                 </button>
               </div>
             )}
@@ -104,9 +111,10 @@ export default function DealRoomPage() {
             {deal.status === "PAID" && isBuyer && (
               <button
                 onClick={() => handle(() => confirmDeal(deal.id))}
-                className="w-full bg-emerald-700 text-white py-2 rounded-lg hover:bg-emerald-800 font-semibold transition-colors"
+                disabled={isSubmitting}
+                className="w-full bg-emerald-700 text-white py-2 rounded-lg hover:bg-emerald-800 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Confirm Receipt
+                {isSubmitting ? "Processing…" : "Confirm Receipt"}
               </button>
             )}
 
@@ -114,9 +122,10 @@ export default function DealRoomPage() {
             {["CREATED", "LOCKED"].includes(deal.status) && (isSeller || isAdmin) && (
               <button
                 onClick={() => handle(() => cancelDeal(deal.id))}
-                className="w-full border border-red-300 text-red-600 py-2 rounded-lg hover:bg-red-50 font-semibold transition-colors"
+                disabled={isSubmitting}
+                className="w-full border border-red-300 text-red-600 py-2 rounded-lg hover:bg-red-50 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Cancel Deal
+                {isSubmitting ? "Processing…" : "Cancel Deal"}
               </button>
             )}
           </div>
