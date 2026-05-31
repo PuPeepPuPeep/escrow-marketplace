@@ -14,12 +14,12 @@ export default function DashboardPage() {
   const [createError, setCreateError] = useState("");
   const [myDeals, setMyDeals] = useState<Deal[]>([]);
   const [dealsError, setDealsError] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const copyToClipboard = async (text: string) => {
+  const copyToClipboard = async (text: string, id: string) => {
     await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const loadMyDeals = () => {
@@ -116,10 +116,10 @@ export default function DashboardPage() {
                   {dealLink}
                 </button>
                 <button
-                  onClick={() => copyToClipboard(dealLink)}
+                  onClick={() => copyToClipboard(dealLink, "new")}
                   className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg border border-green-300 text-green-700 hover:bg-green-100 transition-colors font-medium"
                 >
-                  {copied ? "✓ Copied!" : "Copy"}
+                  {copiedId === "new" ? "✓ Copied!" : "Copy"}
                 </button>
               </div>
             </div>
@@ -150,8 +150,15 @@ export default function DashboardPage() {
                       ฿{deal.amount} · {new Date(deal.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 ml-3 flex-shrink-0">
+                  <div className="flex items-center gap-2 ml-3 flex-shrink-0">
                     <DealStatusBadge status={deal.status} />
+                    <button
+                      onClick={() => copyToClipboard(`${window.location.origin}/deal/${deal.unique_token}`, String(deal.id))}
+                      className="text-xs text-slate-400 hover:text-slate-600 border border-slate-200 rounded px-2 py-1 hover:bg-slate-50 transition-colors"
+                      title="Copy deal link"
+                    >
+                      {copiedId === String(deal.id) ? "✓" : "Copy"}
+                    </button>
                     {deal.status === "CREATED" && (
                       <button
                         onClick={() => handleCancel(deal.id)}
