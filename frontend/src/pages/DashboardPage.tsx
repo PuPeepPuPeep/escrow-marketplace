@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createDeal, cancelDeal, getMyDeals } from "../api/deals";
 import Header from "../components/Header";
+import Pagination from "../components/Pagination";
 import { DealStatusBadge } from "../components/DealStatusBadge";
 import type { Deal } from "../types";
+
+const PER_PAGE = 10;
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -14,6 +17,7 @@ export default function DashboardPage() {
   const [createError, setCreateError] = useState("");
   const [myDeals, setMyDeals] = useState<Deal[]>([]);
   const [dealsError, setDealsError] = useState("");
+  const [dealsPage, setDealsPage] = useState(1);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const copyToClipboard = async (text: string, id: string) => {
@@ -128,50 +132,62 @@ export default function DashboardPage() {
 
         {/* My Deals */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-          <h2 className="text-lg font-semibold text-slate-800 mb-4">My Deals</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-slate-800">My Deals</h2>
+            {myDeals.length > 0 && (
+              <span className="text-xs text-slate-400">{myDeals.length} total</span>
+            )}
+          </div>
           {dealsError && <p className="text-red-600 text-sm">{dealsError}</p>}
           {myDeals.length === 0 ? (
             <p className="text-slate-400 text-sm">No deals yet. Create one above.</p>
-          ) : (
-            <div className="space-y-3">
-              {myDeals.map((deal) => (
-                <div
-                  key={deal.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors"
-                >
-                  <div className="min-w-0 flex-1">
-                    <button
-                      onClick={() => navigate(`/deal/${deal.unique_token}`)}
-                      className="font-medium text-slate-800 hover:text-indigo-600 text-sm truncate block"
+          ) : (() => {
+            const totalPages = Math.ceil(myDeals.length / PER_PAGE);
+            const slice = myDeals.slice((dealsPage - 1) * PER_PAGE, dealsPage * PER_PAGE);
+            return (
+              <>
+                <div className="space-y-3">
+                  {slice.map((deal) => (
+                    <div
+                      key={deal.id}
+                      className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors"
                     >
-                      {deal.title}
-                    </button>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      ฿{deal.amount} · {new Date(deal.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 ml-3 flex-shrink-0">
-                    <DealStatusBadge status={deal.status} />
-                    <button
-                      onClick={() => copyToClipboard(`${window.location.origin}/deal/${deal.unique_token}`, String(deal.id))}
-                      className="text-xs text-slate-400 hover:text-slate-600 border border-slate-200 rounded px-2 py-1 hover:bg-slate-50 transition-colors"
-                      title="Copy deal link"
-                    >
-                      {copiedId === String(deal.id) ? "✓" : "Copy"}
-                    </button>
-                    {deal.status === "CREATED" && (
-                      <button
-                        onClick={() => handleCancel(deal.id)}
-                        className="text-xs text-red-500 hover:text-red-700 border border-red-200 rounded px-2 py-1 hover:bg-red-50 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </div>
+                      <div className="min-w-0 flex-1">
+                        <button
+                          onClick={() => navigate(`/deal/${deal.unique_token}`)}
+                          className="font-medium text-slate-800 hover:text-indigo-600 text-sm truncate block"
+                        >
+                          {deal.title}
+                        </button>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          ฿{deal.amount} · {new Date(deal.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                        <DealStatusBadge status={deal.status} />
+                        <button
+                          onClick={() => copyToClipboard(`${window.location.origin}/deal/${deal.unique_token}`, String(deal.id))}
+                          className="text-xs text-slate-400 hover:text-slate-600 border border-slate-200 rounded px-2 py-1 hover:bg-slate-50 transition-colors"
+                          title="Copy deal link"
+                        >
+                          {copiedId === String(deal.id) ? "✓" : "Copy"}
+                        </button>
+                        {deal.status === "CREATED" && (
+                          <button
+                            onClick={() => handleCancel(deal.id)}
+                            className="text-xs text-red-500 hover:text-red-700 border border-red-200 rounded px-2 py-1 hover:bg-red-50 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
+                <Pagination page={dealsPage} totalPages={totalPages} onChange={setDealsPage} />
+              </>
+            );
+          })()}
         </div>
       </main>
     </div>
