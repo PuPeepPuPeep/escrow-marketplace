@@ -14,6 +14,13 @@ export default function DashboardPage() {
   const [createError, setCreateError] = useState("");
   const [myDeals, setMyDeals] = useState<Deal[]>([]);
   const [dealsError, setDealsError] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = async (text: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const loadMyDeals = () => {
     getMyDeals()
@@ -97,16 +104,24 @@ export default function DashboardPage() {
           </form>
 
           {dealLink && (
-            <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
-              <p className="text-sm font-semibold text-green-800 mb-1">
+            <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200 space-y-2">
+              <p className="text-sm font-semibold text-green-800">
                 Deal created! Share this link with the buyer:
               </p>
-              <button
-                onClick={() => navigate(`/deal/${dealLink.split("/deal/")[1]}`)}
-                className="text-indigo-600 text-sm break-all hover:underline text-left"
-              >
-                {dealLink}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate(`/deal/${dealLink.split("/deal/")[1]}`)}
+                  className="text-indigo-600 text-sm break-all hover:underline text-left flex-1 min-w-0 truncate"
+                >
+                  {dealLink}
+                </button>
+                <button
+                  onClick={() => copyToClipboard(dealLink)}
+                  className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg border border-green-300 text-green-700 hover:bg-green-100 transition-colors font-medium"
+                >
+                  {copied ? "✓ Copied!" : "Copy"}
+                </button>
+              </div>
             </div>
           )}
         </div>
