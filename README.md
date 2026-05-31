@@ -60,7 +60,7 @@ Every transition uses `SELECT ... FOR UPDATE` to prevent concurrent mutations.
 **Prerequisites:** Docker & Docker Compose
 
 ```bash
-git clone https://github.com/<your-username>/escrow-marketplace.git
+git clone https://github.com/PuPeepPuPeep/escrow-marketplace.git
 cd escrow-marketplace
 cp .env.example .env
 # Edit .env — set POSTGRES_PASSWORD and SECRET_KEY at minimum
@@ -169,7 +169,7 @@ CREATED / LOCKED ──► CANCELLED
 **สิ่งที่ต้องมี:** Docker & Docker Compose
 
 ```bash
-git clone https://github.com/<your-username>/escrow-marketplace.git
+git clone https://github.com/PuPeepPuPeep/escrow-marketplace.git
 cd escrow-marketplace
 cp .env.example .env
 # แก้ .env — อย่างน้อยต้องตั้ง POSTGRES_PASSWORD และ SECRET_KEY
