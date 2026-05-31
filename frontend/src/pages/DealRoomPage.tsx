@@ -1,11 +1,12 @@
 import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useDealPolling } from "../hooks/useDealPolling";
 import { useAuth } from "../context/AuthContext";
 import { DealStatusBadge } from "../components/DealStatusBadge";
 import { CountdownTimer } from "../components/CountdownTimer";
 import Header from "../components/Header";
 import { acceptDeal, cancelDeal, confirmDeal, payDeal } from "../api/deals";
-import { useState } from "react";
+import { getEscrowAccount, type EscrowAccount } from "../api/mock";
 
 export default function DealRoomPage() {
   const { token } = useParams<{ token: string }>();
@@ -14,6 +15,15 @@ export default function DealRoomPage() {
   const [actionError, setActionError] = useState("");
   const [slipUrl, setSlipUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [escrowAccount, setEscrowAccount] = useState<EscrowAccount | null>(null);
+
+  const isBuyerLocked = deal?.status === "LOCKED" && !!user && deal?.buyer_id === user.id;
+
+  useEffect(() => {
+    if (isBuyerLocked && !escrowAccount) {
+      getEscrowAccount().then((r) => setEscrowAccount(r.data)).catch(() => {});
+    }
+  }, [isBuyerLocked]);
 
   const handle = async (fn: () => Promise<unknown>) => {
     setActionError("");
@@ -109,9 +119,26 @@ export default function DealRoomPage() {
               </button>
             )}
 
-            {/* Buyer: pay */}
+            {/* Buyer: pay — show escrow account info + slip upload */}
             {deal.status === "LOCKED" && isBuyer && (
-              <div className="space-y-2">
+              <div className="space-y-3">
+                {escrowAccount && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-1.5">
+                    <p className="text-sm font-semibold text-amber-800 mb-2">
+                      💳 Transfer to this account
+                    </p>
+                    <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                      <span className="text-amber-700 font-medium">Bank</span>
+                      <span className="text-amber-900">{escrowAccount.bank_name}</span>
+                      <span className="text-amber-700 font-medium">Account</span>
+                      <span className="text-amber-900 font-mono tracking-wide">{escrowAccount.account_number}</span>
+                      <span className="text-amber-700 font-medium">Name</span>
+                      <span className="text-amber-900">{escrowAccount.account_name}</span>
+                      <span className="text-amber-700 font-medium">Amount</span>
+                      <span className="text-amber-900 font-semibold">฿{deal.amount}</span>
+                    </div>
+                  </div>
+                )}
                 <input
                   placeholder="Slip image URL (optional)"
                   value={slipUrl}
