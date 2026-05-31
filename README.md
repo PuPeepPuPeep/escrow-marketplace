@@ -9,7 +9,13 @@
 
 A full-stack escrow payment platform where funds are held by a neutral third party until the buyer confirms receipt. Built as a portfolio project to demonstrate backend engineering skills: atomic state machines, row-level locking, idempotency, and scheduled job recovery.
 
-**Live demo:** _(deploy URL here)_
+**Live demo:** https://escrow-marketplace.duckdns.org
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@mail.com | P@$$w0rd |
+| User 1 | buy@mail.com | 1212312121 |
+| User 2 | sell@mail.com | 543210 |
 
 ### Features
 
@@ -118,7 +124,13 @@ Key test cases:
 
 แพลตฟอร์ม escrow payment แบบ full-stack ที่เงินจะถูกพักไว้กับตัวกลาง (escrow) จนกว่าผู้ซื้อจะยืนยันว่าได้รับสินค้าแล้วจึงปล่อยเงินให้ผู้ขาย สร้างเพื่อเป็น portfolio project สำหรับแสดงทักษะ backend engineering: atomic state machine, row-level locking, idempotency และ scheduler crash recovery
 
-**Live demo:** _(ใส่ URL ที่นี่)_
+**Live demo:** https://escrow-marketplace.duckdns.org
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@mail.com | P@$$w0rd |
+| User 1 | buy@mail.com | 1212312121 |
+| User 2 | sell@mail.com | 543210 |
 
 ### ฟีเจอร์
 
