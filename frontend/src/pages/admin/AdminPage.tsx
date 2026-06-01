@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { adminExportWithdrawals, adminGetDeals, adminGetStats, adminGetWithdrawals, adminMarkPayout } from "../../api/admin";
 import Header from "../../components/Header";
 import Pagination from "../../components/Pagination";
@@ -26,6 +27,7 @@ interface WithdrawalRow {
 }
 
 export default function AdminPage() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -111,7 +113,14 @@ export default function AdminPage() {
                       {slice.map((d) => (
                         <tr key={d.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
                           <td className="py-2 text-slate-400">{d.id}</td>
-                          <td className="py-2 font-medium text-slate-700">{d.title}</td>
+                          <td className="py-2">
+                            <button
+                              onClick={() => navigate(`/deal/${d.unique_token}`)}
+                              className="font-medium text-indigo-600 hover:underline text-left"
+                            >
+                              {d.title}
+                            </button>
+                          </td>
                           <td className="py-2">฿{d.amount}</td>
                           <td className="py-2"><DealStatusBadge status={d.status} /></td>
                           <td className="py-2 text-slate-400">{d.seller_id}</td>

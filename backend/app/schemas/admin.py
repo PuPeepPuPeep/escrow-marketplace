@@ -10,6 +10,7 @@ class DealAdminResponse(BaseModel):
     amount: Decimal
     gp_fee_percent: Decimal
     status: str
+    unique_token: str
     seller_id: int
     buyer_id: int | None
     created_at: datetime

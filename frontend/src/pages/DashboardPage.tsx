@@ -63,6 +63,23 @@ export default function DashboardPage() {
       <Header />
 
       <main className="max-w-2xl mx-auto mt-8 px-4 space-y-6 pb-12">
+        {/* Onboarding — show only when user has no deals yet */}
+        {myDeals.length === 0 && (
+          <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 space-y-3">
+            <p className="text-sm font-semibold text-indigo-800">💡 How it works</p>
+            <div className="grid sm:grid-cols-2 gap-3 text-sm text-indigo-700">
+              <div className="space-y-1">
+                <p className="font-medium">🏷️ As a Seller</p>
+                <p className="text-indigo-600 leading-relaxed">Create a deal → share the link with your buyer → wait for payment confirmation → funds released to your wallet</p>
+              </div>
+              <div className="space-y-1">
+                <p className="font-medium">🛒 As a Buyer</p>
+                <p className="text-indigo-600 leading-relaxed">Open the deal link from seller → accept → transfer money to the escrow account → confirm receipt after goods arrive</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Create Deal */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
           <h2 className="text-lg font-semibold text-slate-800 mb-4">Create New Deal</h2>
@@ -76,7 +93,7 @@ export default function DashboardPage() {
               placeholder="Deal title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
               required
             />
             <input
@@ -85,7 +102,7 @@ export default function DashboardPage() {
               min="1"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
               required
             />
             <div className="flex items-center gap-2">
@@ -96,7 +113,7 @@ export default function DashboardPage() {
                 max="60"
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
-                className="w-24 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="w-24 border border-slate-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
             </div>
             <button

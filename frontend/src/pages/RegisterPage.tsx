@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { register } from "../api/auth";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { register, login, getMe } from "../api/auth";
+import { useAuth } from "../context/AuthContext";
 
 export default function RegisterPage() {
+  const { setToken } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -13,7 +16,12 @@ export default function RegisterPage() {
     setError("");
     try {
       await register(email, password);
-      navigate("/login");
+      // auto-login after successful registration
+      const token = await login(email, password);
+      setToken(token);
+      const meRes = await getMe();
+      const redirectTo = searchParams.get("redirect");
+      navigate(redirectTo ?? (meRes.data.is_admin ? "/admin" : "/dashboard"));
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
       setError(msg ?? "Registration failed");
@@ -40,7 +48,7 @@ export default function RegisterPage() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
           required
         />
         <input
@@ -48,7 +56,7 @@ export default function RegisterPage() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
           required
         />
         <button

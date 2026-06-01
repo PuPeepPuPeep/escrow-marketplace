@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { login, getMe } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const { setToken } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -17,7 +18,8 @@ export default function LoginPage() {
       const token = await login(email, password);
       setToken(token);
       const meRes = await getMe();
-      navigate(meRes.data.is_admin ? "/admin" : "/dashboard");
+      const redirectTo = searchParams.get("redirect");
+      navigate(redirectTo ?? (meRes.data.is_admin ? "/admin" : "/dashboard"));
     } catch {
       setError("Invalid email or password");
     }
@@ -43,7 +45,7 @@ export default function LoginPage() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
           required
         />
         <input
@@ -51,7 +53,7 @@ export default function LoginPage() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
           required
         />
         <button
