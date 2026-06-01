@@ -46,7 +46,7 @@ export default function Header() {
           onClick={toggleLang}
           className="text-xs font-semibold px-2 py-1 rounded border border-slate-600 text-slate-300 hover:border-indigo-400 hover:text-white transition-colors"
         >
-          {lang === "en" ? "TH" : "EN"}
+          {lang.toUpperCase()}
         </button>
 
         {user ? (
