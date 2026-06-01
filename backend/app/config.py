@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -12,8 +12,7 @@ class Settings(BaseSettings):
     escrow_account_number: str = "123-4-56789-0"
     escrow_account_name: str = "Escrow Marketplace Co., Ltd."
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
 
 
 settings = Settings()
