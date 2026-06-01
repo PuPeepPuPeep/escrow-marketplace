@@ -24,11 +24,18 @@ A full-stack escrow payment platform where funds are held by a neutral third par
 - Deal link is shareable — anyone with the link can view and accept
 - Countdown timer per deal; expired deals are automatically cancelled by the scheduler
 - Mock slip verification (90% success rate, or force result for testing)
+- Escrow bank account displayed to buyer after accepting (values from backend config)
 
 **Admin**
-- View all deals across the platform
+- View all deals across the platform with clickable links to each deal room
 - Cancel any locked deal (e.g. dispute resolution)
 - Manage withdrawal payouts with CSV export
+
+**UI / UX**
+- Thai / English language toggle (persisted in localStorage)
+- Mobile-friendly — all inputs use 16px font to prevent iOS Safari zoom on focus
+- Onboarding card on first visit explaining buyer and seller flows
+- Auto-login after registration — no need to sign in again
 
 **Security & correctness**
 - `SELECT FOR UPDATE` row-level locking prevents double-acceptance race conditions
@@ -139,11 +146,18 @@ Key test cases:
 - ลิงก์ดีลแชร์ได้ — ใครมีลิงก์ก็สามารถดูและกดรับดีลได้
 - มี countdown timer ต่อดีล — ถ้าหมดเวลาระบบยกเลิกอัตโนมัติ
 - Mock การตรวจสลิป (สำเร็จ 90% หรือกำหนด force result สำหรับ testing)
+- แสดงข้อมูลบัญชี escrow ให้ผู้ซื้อเห็นทันทีหลังกดรับดีล (ค่ามาจาก backend config)
 
 **ฝั่ง Admin**
-- ดู list ดีลทั้งหมดในระบบ
+- ดู list ดีลทั้งหมดในระบบ พร้อมลิงก์เข้าห้องดีลแต่ละรายการ
 - ยกเลิกดีลที่ถูกล็อกได้ (เช่น กรณีพิพาท)
 - จัดการคำขอถอนเงิน พร้อม export CSV
+
+**UI / UX**
+- สลับภาษาไทย / อังกฤษได้ (จำการตั้งค่าใน localStorage)
+- รองรับ mobile — input ทุกช่องใช้ font ขนาด 16px ป้องกัน iOS Safari zoom อัตโนมัติ
+- มีการ์ดอธิบายวิธีใช้งานสำหรับผู้ใช้ใหม่ (ซ่อนอัตโนมัติเมื่อมีดีลแล้ว)
+- หลังสมัครสมาชิกสำเร็จจะ login ให้อัตโนมัติ ไม่ต้อง login ซ้ำ
 
 **ความถูกต้องและความปลอดภัย**
 - `SELECT FOR UPDATE` ป้องกัน race condition กรณีมีคนกด Accept พร้อมกัน
