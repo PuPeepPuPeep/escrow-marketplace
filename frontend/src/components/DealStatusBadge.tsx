@@ -1,4 +1,5 @@
 import type { DealStatus } from "../types";
+import { useLanguage } from "../context/LanguageContext";
 
 const colors: Record<DealStatus, string> = {
   CREATED: "bg-gray-100 text-gray-700",
@@ -12,9 +13,10 @@ const colors: Record<DealStatus, string> = {
 };
 
 export function DealStatusBadge({ status }: { status: DealStatus }) {
+  const { t } = useLanguage();
   return (
     <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${colors[status]}`}>
-      {status}
+      {t("status", status)}
     </span>
   );
 }

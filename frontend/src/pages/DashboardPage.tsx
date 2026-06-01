@@ -4,12 +4,14 @@ import { createDeal, cancelDeal, getMyDeals } from "../api/deals";
 import Header from "../components/Header";
 import Pagination from "../components/Pagination";
 import { DealStatusBadge } from "../components/DealStatusBadge";
+import { useLanguage } from "../context/LanguageContext";
 import type { Deal } from "../types";
 
 const PER_PAGE = 10;
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [duration, setDuration] = useState(30);
@@ -29,7 +31,7 @@ export default function DashboardPage() {
   const loadMyDeals = () => {
     getMyDeals()
       .then((r) => setMyDeals(r.data))
-      .catch(() => setDealsError("Failed to load your deals"));
+      .catch(() => setDealsError(t("dashboard", "failedLoad")));
   };
 
   useEffect(() => { loadMyDeals(); }, []);
@@ -39,13 +41,13 @@ export default function DashboardPage() {
     setCreateError("");
     try {
       const res = await createDeal(title, amount, duration);
-      const t = res.data.unique_token;
-      setDealLink(`${window.location.origin}/deal/${t}`);
+      const tok = res.data.unique_token;
+      setDealLink(`${window.location.origin}/deal/${tok}`);
       setTitle("");
       setAmount("");
       loadMyDeals();
     } catch {
-      setCreateError("Failed to create deal");
+      setCreateError(t("dashboard", "failedCreate"));
     }
   };
 
@@ -54,7 +56,7 @@ export default function DashboardPage() {
       await cancelDeal(id);
       loadMyDeals();
     } catch {
-      alert("Failed to cancel deal");
+      alert(t("dashboard", "failedCancel"));
     }
   };
 
@@ -66,15 +68,15 @@ export default function DashboardPage() {
         {/* Onboarding — show only when user has no deals yet */}
         {myDeals.length === 0 && (
           <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 space-y-3">
-            <p className="text-sm font-semibold text-indigo-800">💡 How it works</p>
+            <p className="text-sm font-semibold text-indigo-800">{t("dashboard", "howItWorks")}</p>
             <div className="grid sm:grid-cols-2 gap-3 text-sm text-indigo-700">
               <div className="space-y-1">
-                <p className="font-medium">🏷️ As a Seller</p>
-                <p className="text-indigo-600 leading-relaxed">Create a deal → share the link with your buyer → wait for payment confirmation → funds released to your wallet</p>
+                <p className="font-medium">{t("dashboard", "asSeller")}</p>
+                <p className="text-indigo-600 leading-relaxed">{t("dashboard", "sellerDesc")}</p>
               </div>
               <div className="space-y-1">
-                <p className="font-medium">🛒 As a Buyer</p>
-                <p className="text-indigo-600 leading-relaxed">Open the deal link from seller → accept → transfer money to the escrow account → confirm receipt after goods arrive</p>
+                <p className="font-medium">{t("dashboard", "asBuyer")}</p>
+                <p className="text-indigo-600 leading-relaxed">{t("dashboard", "buyerDesc")}</p>
               </div>
             </div>
           </div>
@@ -82,7 +84,7 @@ export default function DashboardPage() {
 
         {/* Create Deal */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-          <h2 className="text-lg font-semibold text-slate-800 mb-4">Create New Deal</h2>
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">{t("dashboard", "createDeal")}</h2>
           {createError && (
             <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3">
               {createError}
@@ -90,14 +92,14 @@ export default function DashboardPage() {
           )}
           <form onSubmit={handleCreate} className="space-y-3">
             <input
-              placeholder="Deal title"
+              placeholder={t("dashboard", "dealTitlePlaceholder")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
               required
             />
             <input
-              placeholder="Amount (THB)"
+              placeholder={t("dashboard", "amountPlaceholder")}
               type="number"
               min="1"
               value={amount}
@@ -106,7 +108,9 @@ export default function DashboardPage() {
               required
             />
             <div className="flex items-center gap-2">
-              <label className="text-sm text-slate-600 whitespace-nowrap">Lock duration (min):</label>
+              <label className="text-sm text-slate-600 whitespace-nowrap">
+                {t("dashboard", "lockDurationLabel")}
+              </label>
               <input
                 type="number"
                 min="5"
@@ -120,14 +124,14 @@ export default function DashboardPage() {
               type="submit"
               className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-semibold transition-colors"
             >
-              Create Deal
+              {t("dashboard", "createBtn")}
             </button>
           </form>
 
           {dealLink && (
             <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200 space-y-2">
               <p className="text-sm font-semibold text-green-800">
-                Deal created! Share this link with the buyer:
+                {t("dashboard", "dealCreated")}
               </p>
               <div className="flex items-center gap-2">
                 <button
@@ -140,7 +144,7 @@ export default function DashboardPage() {
                   onClick={() => copyToClipboard(dealLink, "new")}
                   className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg border border-green-300 text-green-700 hover:bg-green-100 transition-colors font-medium"
                 >
-                  {copiedId === "new" ? "✓ Copied!" : "Copy"}
+                  {copiedId === "new" ? t("common", "copied") : t("common", "copy")}
                 </button>
               </div>
             </div>
@@ -150,14 +154,14 @@ export default function DashboardPage() {
         {/* My Deals */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-800">My Deals</h2>
+            <h2 className="text-lg font-semibold text-slate-800">{t("dashboard", "myDeals")}</h2>
             {myDeals.length > 0 && (
-              <span className="text-xs text-slate-400">{myDeals.length} total</span>
+              <span className="text-xs text-slate-400">{myDeals.length} {t("common", "total")}</span>
             )}
           </div>
           {dealsError && <p className="text-red-600 text-sm">{dealsError}</p>}
           {myDeals.length === 0 ? (
-            <p className="text-slate-400 text-sm">No deals yet. Create one above.</p>
+            <p className="text-slate-400 text-sm">{t("dashboard", "noDeals")}</p>
           ) : (() => {
             const totalPages = Math.ceil(myDeals.length / PER_PAGE);
             const slice = myDeals.slice((dealsPage - 1) * PER_PAGE, dealsPage * PER_PAGE);
@@ -185,16 +189,16 @@ export default function DashboardPage() {
                         <button
                           onClick={() => copyToClipboard(`${window.location.origin}/deal/${deal.unique_token}`, String(deal.id))}
                           className="text-xs text-slate-400 hover:text-slate-600 border border-slate-200 rounded px-2 py-1 hover:bg-slate-50 transition-colors"
-                          title="Copy deal link"
+                          title={t("common", "copy")}
                         >
-                          {copiedId === String(deal.id) ? "✓" : "Copy"}
+                          {copiedId === String(deal.id) ? "✓" : t("common", "copy")}
                         </button>
                         {deal.status === "CREATED" && (
                           <button
                             onClick={() => handleCancel(deal.id)}
                             className="text-xs text-red-500 hover:text-red-700 border border-red-200 rounded px-2 py-1 hover:bg-red-50 transition-colors"
                           >
-                            Cancel
+                            {t("common", "cancel")}
                           </button>
                         )}
                       </div>

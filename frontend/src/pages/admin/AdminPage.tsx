@@ -4,6 +4,7 @@ import { adminExportWithdrawals, adminGetDeals, adminGetStats, adminGetWithdrawa
 import Header from "../../components/Header";
 import Pagination from "../../components/Pagination";
 import { DealStatusBadge } from "../../components/DealStatusBadge";
+import { useLanguage } from "../../context/LanguageContext";
 import type { Deal } from "../../types";
 
 const PER_PAGE = 10;
@@ -28,6 +29,7 @@ interface WithdrawalRow {
 
 export default function AdminPage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [stats, setStats] = useState<Stats | null>(null);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -35,7 +37,7 @@ export default function AdminPage() {
   const [error, setError] = useState("");
 
   const loadData = () => {
-    adminGetStats().then((r) => setStats(r.data)).catch(() => setError("Failed to load stats"));
+    adminGetStats().then((r) => setStats(r.data)).catch(() => setError(t("admin", "failedStats")));
     adminGetWithdrawals("QUEUED").then((r) => setWithdrawals(r.data)).catch(() => {});
     adminGetDeals().then((r) => setDeals(r.data)).catch(() => {});
   };
@@ -68,10 +70,10 @@ export default function AdminPage() {
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Total Deals", value: stats.total_deals },
-              { label: "Volume (Done)", value: `฿${stats.total_volume}` },
-              { label: "Fees Collected", value: `฿${stats.total_fees_collected}` },
-              { label: "Pending Withdrawals", value: `${stats.pending_withdrawals} (฿${stats.pending_withdrawal_amount})` },
+              { label: t("admin", "statTotalDeals"), value: stats.total_deals },
+              { label: t("admin", "statVolume"), value: `฿${stats.total_volume}` },
+              { label: t("admin", "statFees"), value: `฿${stats.total_fees_collected}` },
+              { label: t("admin", "statPendingWithdrawals"), value: `${stats.pending_withdrawals} (฿${stats.pending_withdrawal_amount})` },
             ].map(({ label, value }) => (
               <div key={label} className="bg-white rounded-xl shadow-sm border border-slate-100 p-4">
                 <p className="text-xs text-slate-500">{label}</p>
@@ -84,13 +86,13 @@ export default function AdminPage() {
         {/* All Deals */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-800">All Deals</h2>
+            <h2 className="text-lg font-semibold text-slate-800">{t("admin", "allDeals")}</h2>
             {deals.length > 0 && (
-              <span className="text-xs text-slate-400">{deals.length} total</span>
+              <span className="text-xs text-slate-400">{deals.length} {t("common", "total")}</span>
             )}
           </div>
           {deals.length === 0 ? (
-            <p className="text-slate-400 text-sm">No deals yet.</p>
+            <p className="text-slate-400 text-sm">{t("admin", "noDeals")}</p>
           ) : (() => {
             const totalPages = Math.ceil(deals.length / PER_PAGE);
             const slice = deals.slice((dealsPage - 1) * PER_PAGE, dealsPage * PER_PAGE);
@@ -100,13 +102,13 @@ export default function AdminPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-left text-slate-500 border-b border-slate-100">
-                        <th className="pb-2 font-medium">ID</th>
-                        <th className="pb-2 font-medium">Title</th>
-                        <th className="pb-2 font-medium">Amount</th>
-                        <th className="pb-2 font-medium">Status</th>
-                        <th className="pb-2 font-medium">Seller</th>
-                        <th className="pb-2 font-medium">Buyer</th>
-                        <th className="pb-2 font-medium">Created</th>
+                        <th className="pb-2 font-medium">{t("admin", "colId")}</th>
+                        <th className="pb-2 font-medium">{t("admin", "colTitle")}</th>
+                        <th className="pb-2 font-medium">{t("admin", "colAmount")}</th>
+                        <th className="pb-2 font-medium">{t("admin", "colStatus")}</th>
+                        <th className="pb-2 font-medium">{t("admin", "colSeller")}</th>
+                        <th className="pb-2 font-medium">{t("admin", "colBuyer")}</th>
+                        <th className="pb-2 font-medium">{t("admin", "colCreated")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -140,27 +142,27 @@ export default function AdminPage() {
         {/* Pending Withdrawals */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-slate-800">Pending Withdrawals</h2>
+            <h2 className="text-lg font-semibold text-slate-800">{t("admin", "pendingWithdrawals")}</h2>
             <button
               onClick={handleExport}
               className="text-sm bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-colors"
             >
-              Export CSV
+              {t("admin", "exportCsv")}
             </button>
           </div>
           {withdrawals.length === 0 ? (
-            <p className="text-slate-400 text-sm">No pending withdrawals.</p>
+            <p className="text-slate-400 text-sm">{t("admin", "noPendingWithdrawals")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-slate-500 border-b border-slate-100">
-                    <th className="pb-2 font-medium">ID</th>
-                    <th className="pb-2 font-medium">Amount</th>
-                    <th className="pb-2 font-medium">Bank</th>
-                    <th className="pb-2 font-medium">Account</th>
-                    <th className="pb-2 font-medium">Requested</th>
-                    <th className="pb-2 font-medium">Action</th>
+                    <th className="pb-2 font-medium">{t("admin", "colId")}</th>
+                    <th className="pb-2 font-medium">{t("admin", "colAmount")}</th>
+                    <th className="pb-2 font-medium">{t("admin", "colBank")}</th>
+                    <th className="pb-2 font-medium">{t("admin", "colAccount")}</th>
+                    <th className="pb-2 font-medium">{t("admin", "colRequested")}</th>
+                    <th className="pb-2 font-medium">{t("admin", "colAction")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -176,7 +178,7 @@ export default function AdminPage() {
                           onClick={() => handlePayout(w.id)}
                           className="text-xs bg-indigo-600 text-white px-2 py-1 rounded hover:bg-indigo-700 transition-colors"
                         >
-                          Mark Paid
+                          {t("admin", "markPaid")}
                         </button>
                       </td>
                     </tr>

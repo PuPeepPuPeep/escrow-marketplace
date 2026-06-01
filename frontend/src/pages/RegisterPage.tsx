@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { register, login, getMe } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function RegisterPage() {
   const { setToken } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
@@ -16,7 +18,6 @@ export default function RegisterPage() {
     setError("");
     try {
       await register(email, password);
-      // auto-login after successful registration
       const token = await login(email, password);
       setToken(token);
       const meRes = await getMe();
@@ -24,7 +25,7 @@ export default function RegisterPage() {
       navigate(redirectTo ?? (meRes.data.is_admin ? "/admin" : "/dashboard"));
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setError(msg ?? "Registration failed");
+      setError(msg ?? t("auth", "registrationFailed"));
     }
   };
 
@@ -36,7 +37,7 @@ export default function RegisterPage() {
       >
         <div className="text-center mb-2">
           <h1 className="text-2xl font-bold text-slate-800">Escrow</h1>
-          <p className="text-sm text-slate-500 mt-1">Create your account</p>
+          <p className="text-sm text-slate-500 mt-1">{t("auth", "createSubtitle")}</p>
         </div>
         {error && (
           <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
@@ -45,7 +46,7 @@ export default function RegisterPage() {
         )}
         <input
           type="email"
-          placeholder="Email"
+          placeholder={t("auth", "email")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
@@ -53,7 +54,7 @@ export default function RegisterPage() {
         />
         <input
           type="password"
-          placeholder="Password"
+          placeholder={t("auth", "password")}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
@@ -63,12 +64,12 @@ export default function RegisterPage() {
           type="submit"
           className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-semibold transition-colors"
         >
-          Create Account
+          {t("auth", "createAccount")}
         </button>
         <p className="text-sm text-center text-slate-500">
-          Already have an account?{" "}
+          {t("auth", "haveAccount")}{" "}
           <Link to="/login" className="text-indigo-600 hover:underline font-medium">
-            Sign In
+            {t("auth", "signIn")}
           </Link>
         </p>
       </form>

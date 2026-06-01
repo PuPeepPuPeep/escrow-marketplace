@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDealPolling } from "../hooks/useDealPolling";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import { DealStatusBadge } from "../components/DealStatusBadge";
 import { CountdownTimer } from "../components/CountdownTimer";
 import Header from "../components/Header";
@@ -11,6 +12,7 @@ import { getEscrowAccount, type EscrowAccount } from "../api/mock";
 export default function DealRoomPage() {
   const { token } = useParams<{ token: string }>();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { deal, error, refetch } = useDealPolling(token ?? null);
   const [actionError, setActionError] = useState("");
   const [slipUrl, setSlipUrl] = useState("");
@@ -30,10 +32,10 @@ export default function DealRoomPage() {
     setIsSubmitting(true);
     try {
       await fn();
-      await refetch(); // update deal status immediately — don't wait for next poll
+      await refetch();
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setActionError(msg ?? "Action failed");
+      setActionError(msg ?? t("common", "actionFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -49,7 +51,7 @@ export default function DealRoomPage() {
   if (!deal) return (
     <div className="min-h-screen bg-slate-50">
       <Header />
-      <div className="p-8 text-slate-400">Loading deal…</div>
+      <div className="p-8 text-slate-400">{t("deal", "loadingDeal")}</div>
     </div>
   );
 
@@ -69,12 +71,12 @@ export default function DealRoomPage() {
           </div>
 
           <div className="text-sm text-slate-600 space-y-1.5 bg-slate-50 rounded-lg p-4">
-            <p><span className="font-medium text-slate-700">Amount:</span> ฿{deal.amount}</p>
-            <p><span className="font-medium text-slate-700">GP Fee:</span> {deal.gp_fee_percent}%</p>
-            <p><span className="font-medium text-slate-700">Lock duration:</span> {deal.lock_duration_minutes} min</p>
+            <p><span className="font-medium text-slate-700">{t("deal", "dealAmountLabel")}</span> ฿{deal.amount}</p>
+            <p><span className="font-medium text-slate-700">{t("deal", "gpFeeLabel")}</span> {deal.gp_fee_percent}%</p>
+            <p><span className="font-medium text-slate-700">{t("deal", "lockDurationLabel")}</span> {deal.lock_duration_minutes} min</p>
             {deal.expires_at && (
               <p>
-                <span className="font-medium text-slate-700">Time remaining:</span>{" "}
+                <span className="font-medium text-slate-700">{t("deal", "timeRemainingLabel")}</span>{" "}
                 <CountdownTimer expiresAt={deal.expires_at} />
               </p>
             )}
@@ -90,19 +92,19 @@ export default function DealRoomPage() {
             {/* Not logged in: prompt to login */}
             {deal.status === "CREATED" && !user && (
               <div className="text-center space-y-2 py-1">
-                <p className="text-sm text-slate-500">Sign in to accept this deal</p>
+                <p className="text-sm text-slate-500">{t("deal", "signInToAccept")}</p>
                 <div className="flex gap-2">
                   <a
                     href={`/login?redirect=/deal/${token}`}
                     className="flex-1 text-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-semibold transition-colors text-sm"
                   >
-                    Sign In
+                    {t("auth", "signIn")}
                   </a>
                   <a
                     href={`/register?redirect=/deal/${token}`}
                     className="flex-1 text-center border border-indigo-300 text-indigo-600 py-2 rounded-lg hover:bg-indigo-50 font-semibold transition-colors text-sm"
                   >
-                    Register
+                    {t("auth", "register")}
                   </a>
                 </div>
               </div>
@@ -115,7 +117,7 @@ export default function DealRoomPage() {
                 disabled={isSubmitting}
                 className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? "Processing…" : "Accept Deal"}
+                {isSubmitting ? t("common", "processing") : t("deal", "acceptDeal")}
               </button>
             )}
 
@@ -125,22 +127,22 @@ export default function DealRoomPage() {
                 {escrowAccount && (
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-1.5">
                     <p className="text-sm font-semibold text-amber-800 mb-2">
-                      💳 Transfer to this account
+                      {t("deal", "transferTitle")}
                     </p>
                     <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-                      <span className="text-amber-700 font-medium">Bank</span>
+                      <span className="text-amber-700 font-medium">{t("deal", "bankLabel")}</span>
                       <span className="text-amber-900">{escrowAccount.bank_name}</span>
-                      <span className="text-amber-700 font-medium">Account</span>
+                      <span className="text-amber-700 font-medium">{t("deal", "accountLabel")}</span>
                       <span className="text-amber-900 font-mono tracking-wide">{escrowAccount.account_number}</span>
-                      <span className="text-amber-700 font-medium">Name</span>
+                      <span className="text-amber-700 font-medium">{t("deal", "nameLabel")}</span>
                       <span className="text-amber-900">{escrowAccount.account_name}</span>
-                      <span className="text-amber-700 font-medium">Amount</span>
+                      <span className="text-amber-700 font-medium">{t("deal", "amountLabel")}</span>
                       <span className="text-amber-900 font-semibold">฿{deal.amount}</span>
                     </div>
                   </div>
                 )}
                 <input
-                  placeholder="Slip image URL (optional)"
+                  placeholder={t("deal", "slipPlaceholder")}
                   value={slipUrl}
                   onChange={(e) => setSlipUrl(e.target.value)}
                   disabled={isSubmitting}
@@ -151,7 +153,7 @@ export default function DealRoomPage() {
                   disabled={isSubmitting}
                   className="w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? "Processing…" : "Submit Payment"}
+                  {isSubmitting ? t("common", "processing") : t("deal", "submitPayment")}
                 </button>
               </div>
             )}
@@ -163,7 +165,7 @@ export default function DealRoomPage() {
                 disabled={isSubmitting}
                 className="w-full bg-emerald-700 text-white py-2 rounded-lg hover:bg-emerald-800 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? "Processing…" : "Confirm Receipt"}
+                {isSubmitting ? t("common", "processing") : t("deal", "confirmReceipt")}
               </button>
             )}
 
@@ -174,14 +176,14 @@ export default function DealRoomPage() {
                 disabled={isSubmitting}
                 className="w-full border border-red-300 text-red-600 py-2 rounded-lg hover:bg-red-50 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? "Processing…" : "Cancel Deal"}
+                {isSubmitting ? t("common", "processing") : t("deal", "cancelDeal")}
               </button>
             )}
           </div>
 
           {deal.status === "DONE" && (
             <p className="text-emerald-700 font-semibold text-center bg-emerald-50 rounded-lg py-3">
-              Deal completed! Payment released to seller.
+              {t("deal", "dealDone")}
             </p>
           )}
         </div>
